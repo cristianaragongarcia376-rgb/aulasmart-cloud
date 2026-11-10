@@ -1,0 +1,36 @@
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import pg from 'pg';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import {z} from 'zod';
+const app=express();
+app.disable('x-powered-by');
+app.use(helmet());
+app.use(cors({origin:(process.env.CORS_ORIGIN||'http://localhost:5173').split(',')}));
+app.use(express.json({limit:'30kb'}));
+app.use('/api',rateLimit({windowMs:15*60*1000,limit:200,standardHeaders:'draft-7',legacyHeaders:false}));
+const pool=new pg.Pool({connectionString:process.env.DATABASE_URL,ssl:process.env.DATABASE_SSL==='true'?{rejectUnauthorized:true}:undefined});
+const SECRET=process.env.JWT_SECRET;
+if(!SECRET||SECRET.length<32)throw new Error('Configura JWT_SECRET con al menos 32 caracteres.');
+const fail=(res,code,message)=>res.status(code).json({error:message});
+const auth=(req,res,next)=>{const token=req.headers.authorization?.match(/^Bearer (.+)$/)?.[1];if(!token)return fail(res,401,'Autenticación requerida');try{req.user=jwt.verify(token,SECRET,{algorithms:['HS256']});next()}catch{return fail(res,401,'Sesión inválida')}};
+const admin=(req,res,next)=>req.user.role==='admin'?next():fail(res,403,'Permisos insuficientes');
+const s=z.string().trim().min(1).max(160);
+const status=z.enum(['Activo','Pendiente']);
+const schemas={students:z.object({name:s,email:z.string().email().max(200),grade:s,status:status}),teachers:z.object({name:s,email:z.string().email().max(200),subject:s,status:status}),courses:z.object({name:s,code:s,teacher:s,grade:s,capacity:z.number().int().positive(),students:z.number().int().nonnegative(),status}),enrollments:z.object({student:s,course:s,date:z.string().date(),status:z.enum(['Confirmada','Pendiente'])}),payments:z.object({student:s,concept:s,amount:z.number().nonnegative(),date:z.string().date(),status:z.enum(['Pagado','Pendiente'])})};
+const tables=Object.keys(schemas);
+app.get('/api/health',async(req,res)=>{try{await pool.query('SELECT 1');res.json({ok:true})}catch{fail(res,503,'Base de datos no disponible')}});
+// Bootstrap intencionalmente sin registro público: crea institución y admin con el script seed-admin.js.
+app.post('/api/auth/login',rateLimit({windowMs:15*60*1000,limit:10}),async(req,res,next)=>{try{const parsed=z.object({email:z.string().email(),password:z.string().min(1)}).safeParse(req.body);if(!parsed.success)return fail(res,400,'Credenciales inválidas');const{rows}=await pool.query('SELECT * FROM users WHERE email=$1',[parsed.data.email.toLowerCase()]);const user=rows[0];if(!user||!await bcrypt.compare(parsed.data.password,user.password_hash))return fail(res,401,'Credenciales incorrectas');const token=jwt.sign({sub:user.id,institutionId:user.institution_id,role:user.role},SECRET,{expiresIn:'8h',algorithm:'HS256'});res.json({token,user:{id:user.id,name:user.name,role:user.role,institutionId:user.institution_id}})}catch(e){next(e)}});
+app.get('/api/me',auth,async(req,res)=>res.json({user:req.user}));
+app.get('/api/:resource',auth,async(req,res,next)=>{try{const resource=req.params.resource;if(!tables.includes(resource))return fail(res,404,'Recurso no encontrado');if(req.user.role==='student'&&!['courses'].includes(resource))return fail(res,403,'Permisos insuficientes');const{rows}=await pool.query(`SELECT * FROM ${resource} WHERE institution_id=$1 ORDER BY created_at DESC LIMIT 500`,[req.user.institutionId]);res.json(rows)}catch(e){next(e)}});
+app.post('/api/:resource',auth,admin,async(req,res,next)=>{try{const resource=req.params.resource;if(!tables.includes(resource))return fail(res,404,'Recurso no encontrado');const parsed=schemas[resource].safeParse(req.body);if(!parsed.success)return fail(res,400,'Datos inválidos: '+parsed.error.issues.map(i=>i.path.join('.')).join(', '));if(resource==='courses'&&parsed.data.students>parsed.data.capacity)return fail(res,400,'Los inscritos exceden los cupos');const keys=Object.keys(parsed.data),vals=Object.values(parsed.data);const{rows}=await pool.query(`INSERT INTO ${resource}(institution_id,${keys.join(',')}) VALUES ($1,${keys.map((_,i)=>'$'+(i+2)).join(',')}) RETURNING *`,[req.user.institutionId,...vals]);await audit(req.user,'CREATE',resource,rows[0].id);res.status(201).json(rows[0])}catch(e){next(e)}});
+app.put('/api/:resource/:id',auth,admin,async(req,res,next)=>{try{const resource=req.params.resource;if(!tables.includes(resource))return fail(res,404,'Recurso no encontrado');const parsed=schemas[resource].safeParse(req.body);if(!parsed.success)return fail(res,400,'Datos inválidos');if(resource==='courses'&&parsed.data.students>parsed.data.capacity)return fail(res,400,'Los inscritos exceden los cupos');const keys=Object.keys(parsed.data),vals=Object.values(parsed.data);const{rows}=await pool.query(`UPDATE ${resource} SET ${keys.map((k,i)=>`${k}=$${i+3}`).join(',')} WHERE id=$1 AND institution_id=$2 RETURNING *`,[req.params.id,req.user.institutionId,...vals]);if(!rows.length)return fail(res,404,'Registro no encontrado');await audit(req.user,'UPDATE',resource,rows[0].id);res.json(rows[0])}catch(e){next(e)}});
+app.delete('/api/:resource/:id',auth,admin,async(req,res,next)=>{try{const resource=req.params.resource;if(!tables.includes(resource))return fail(res,404,'Recurso no encontrado');const{rows}=await pool.query(`DELETE FROM ${resource} WHERE id=$1 AND institution_id=$2 RETURNING id`,[req.params.id,req.user.institutionId]);if(!rows.length)return fail(res,404,'Registro no encontrado');await audit(req.user,'DELETE',resource,rows[0].id);res.status(204).end()}catch(e){next(e)}});
+async function audit(user,action,entity,id){await pool.query('INSERT INTO audit_logs(institution_id,user_id,action,entity,entity_id) VALUES($1,$2,$3,$4,$5)',[user.institutionId,user.sub,action,entity,id])}
+app.use((err,req,res,next)=>{console.error(err);if(err.code==='23505')return fail(res,409,'Ya existe un registro con esos datos');if(err.code==='22P02')return fail(res,400,'Identificador inválido');if(err.code==='23514')return fail(res,400,'Los datos incumplen una restricción');fail(res,500,'Error interno del servidor')});
+app.listen(Number(process.env.PORT)||4000,()=>console.log('AulaSmart API iniciada'));
