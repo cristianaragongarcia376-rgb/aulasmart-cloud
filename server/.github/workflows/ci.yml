@@ -1,0 +1,23 @@
+name: CI - Validar frontend
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependencias reproducibles
+        run: npm ci
+      - name: Compilar frontend
+        run: npm run build
+      - name: Comprobar sintaxis de la API
+        run: node --check server/src/index.js
