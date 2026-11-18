@@ -36,7 +36,8 @@ jobs:
       - name: Compilar aplicación
         run: npm run build
         env:
-          GITHUB_PAGES: 'true'
+           GITHUB_PAGES: 'true'
+           CUSTOM_DOMAIN: 'aulasmartcloud.tech'
 
       - name: Preparar GitHub Pages
         uses: actions/configure-pages@v5
