@@ -172,3 +172,36 @@ export function deleteEnrollment(id, token) {
     }
   );
 }
+
+export function getPayments(token) {
+  return getResources('payments', token);
+}
+
+export function createPayment(payment, token) {
+  return apiRequest('/api/payments', {
+    method: 'POST',
+    token,
+    body: JSON.stringify(payment),
+  });
+}
+
+export function updatePayment(id, payment, token) {
+  return apiRequest(
+    `/api/payments/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      token,
+      body: JSON.stringify(payment),
+    }
+  );
+}
+
+export function deletePayment(id, token) {
+  return apiRequest(
+    `/api/payments/${encodeURIComponent(id)}`,
+    {
+      method: 'DELETE',
+      token,
+    }
+  );
+}
