@@ -3,6 +3,8 @@ import Docentes from './Docentes.jsx';
 import Cursos from './Cursos.jsx';
 import Matriculas from './Matriculas.jsx';
 import Pagos from './Pagos.jsx';
+import Reportes from './Reportes.jsx';
+import DashboardReal from './DashboardReal.jsx';
 import './PanelReal.css';
 import {
   getResources,
@@ -179,12 +181,23 @@ async function handleDelete(student) {
   💳 Pagos
 </button>
 
+<button
+  type="button"
+  className={page === 'reports' ? 'active' : ''}
+  onClick={() => setPage('reports')}
+>
+  📊 Reportes
+</button>
+
     </nav>
 
   </aside>
 
   {/* CONTENIDO PRINCIPAL */}
   <main className="real-panel real-content">
+    {page === 'reports' && (
+  <Reportes token={auth.token} />
+)}
     {page === 'payments' && (
   <Pagos token={auth.token} />
 )}
@@ -199,26 +212,7 @@ async function handleDelete(student) {
 )}
     {/* PANEL PRINCIPAL */}
 {page === 'dashboard' && (
-  <section>
-    <h1>Panel principal</h1>
-    <p>Resumen académico de tu institución.</p>
-
-    <div className="real-stats">
-      <div className="real-stat-card">
-        <h3>🎓 Estudiantes registrados</h3>
-        <strong>{loading ? '...' : students.length}</strong>
-        <p>Datos reales de PostgreSQL</p>
-      </div>
-
-      <div className="real-stat-card">
-        <h3>☁️ Estado del sistema</h3>
-        <strong style={{ fontSize: 24 }}>
-          {error ? 'Error de consulta' : loading ? 'Cargando...' : 'Consulta completada'}
-        </strong>
-        <p>API HTTPS de AulaSmart Cloud</p>
-      </div>
-    </div>
-  </section>
+  <DashboardReal token={auth.token} />
 )}
 
       <h1>Panel académico — AulaSmart Cloud</h1>
