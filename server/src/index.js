@@ -1,5 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
+import { registerCourseCreateDeleteRoutes } from './course-create-delete-service.js';
+import { registerCourseUpdateRoutes } from './course-update-service.js';
+import { registerEnrollmentUpdateRoutes } from './enrollment-update-service.js';
+import { registerEnrollmentRoutes } from './enrollment-service.js';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -28,6 +32,11 @@ app.get('/api/health',async(req,res)=>{try{await pool.query('SELECT 1');res.json
 app.post('/api/auth/login',rateLimit({windowMs:15*60*1000,limit:10}),async(req,res,next)=>{try{const parsed=z.object({email:z.string().email(),password:z.string().min(1)}).safeParse(req.body);if(!parsed.success)return fail(res,400,'Credenciales inválidas');const{rows}=await pool.query('SELECT * FROM users WHERE email=$1',[parsed.data.email.toLowerCase()]);const user=rows[0];if(!user||!await bcrypt.compare(parsed.data.password,user.password_hash))return fail(res,401,'Credenciales incorrectas');const token=jwt.sign({sub:user.id,institutionId:user.institution_id,role:user.role},SECRET,{expiresIn:'8h',algorithm:'HS256'});res.json({token,user:{id:user.id,name:user.name,role:user.role,institutionId:user.institution_id}})}catch(e){next(e)}});
 app.get('/api/me',auth,async(req,res)=>res.json({user:req.user}));
 app.get('/api/:resource',auth,async(req,res,next)=>{try{const resource=req.params.resource;if(!tables.includes(resource))return fail(res,404,'Recurso no encontrado');if(req.user.role==='student'&&!['courses'].includes(resource))return fail(res,403,'Permisos insuficientes');const{rows}=await pool.query(`SELECT * FROM ${resource} WHERE institution_id=$1 ORDER BY created_at DESC LIMIT 500`,[req.user.institutionId]);res.json(rows)}catch(e){next(e)}});
+// Registro especializado de matrículas
+registerEnrollmentRoutes(app, pool, auth, admin);
+registerCourseCreateDeleteRoutes(app, pool, auth, admin);
+registerCourseUpdateRoutes(app, pool, auth, admin);
+registerEnrollmentUpdateRoutes(app, pool, auth, admin);
 app.post('/api/:resource',auth,admin,async(req,res,next)=>{try{const resource=req.params.resource;if(!tables.includes(resource))return fail(res,404,'Recurso no encontrado');const parsed=schemas[resource].safeParse(req.body);if(!parsed.success)return fail(res,400,'Datos inválidos: '+parsed.error.issues.map(i=>i.path.join('.')).join(', '));if(resource==='courses'&&parsed.data.students>parsed.data.capacity)return fail(res,400,'Los inscritos exceden los cupos');const keys=Object.keys(parsed.data),vals=Object.values(parsed.data);const{rows}=await pool.query(`INSERT INTO ${resource}(institution_id,${keys.join(',')}) VALUES ($1,${keys.map((_,i)=>'$'+(i+2)).join(',')}) RETURNING *`,[req.user.institutionId,...vals]);await audit(req.user,'CREATE',resource,rows[0].id);res.status(201).json(rows[0])}catch(e){next(e)}});
 app.put('/api/:resource/:id',auth,admin,async(req,res,next)=>{try{const resource=req.params.resource;if(!tables.includes(resource))return fail(res,404,'Recurso no encontrado');const parsed=schemas[resource].safeParse(req.body);if(!parsed.success)return fail(res,400,'Datos inválidos');if(resource==='courses'&&parsed.data.students>parsed.data.capacity)return fail(res,400,'Los inscritos exceden los cupos');const keys=Object.keys(parsed.data),vals=Object.values(parsed.data);const{rows}=await pool.query(`UPDATE ${resource} SET ${keys.map((k,i)=>`${k}=$${i+3}`).join(',')} WHERE id=$1 AND institution_id=$2 RETURNING *`,[req.params.id,req.user.institutionId,...vals]);if(!rows.length)return fail(res,404,'Registro no encontrado');await audit(req.user,'UPDATE',resource,rows[0].id);res.json(rows[0])}catch(e){next(e)}});
 app.delete('/api/:resource/:id',auth,admin,async(req,res,next)=>{try{const resource=req.params.resource;if(!tables.includes(resource))return fail(res,404,'Recurso no encontrado');const{rows}=await pool.query(`DELETE FROM ${resource} WHERE id=$1 AND institution_id=$2 RETURNING id`,[req.params.id,req.user.institutionId]);if(!rows.length)return fail(res,404,'Registro no encontrado');await audit(req.user,'DELETE',resource,rows[0].id);res.status(204).end()}catch(e){next(e)}});
