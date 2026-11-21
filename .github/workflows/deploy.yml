@@ -38,6 +38,7 @@ jobs:
         env:
            GITHUB_PAGES: 'true'
            CUSTOM_DOMAIN: 'aulasmartcloud.tech'
+           VITE_API_URL: 'https://api.aulasmartcloud.tech'
 
       - name: Preparar GitHub Pages
         uses: actions/configure-pages@v5
