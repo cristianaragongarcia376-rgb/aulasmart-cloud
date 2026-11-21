@@ -139,3 +139,36 @@ export function deleteCourse(id, token) {
     token,
   });
 }
+
+export function getEnrollments(token) {
+  return getResources('enrollments', token);
+}
+
+export function createEnrollment(enrollment, token) {
+  return apiRequest('/api/enrollments', {
+    method: 'POST',
+    token,
+    body: JSON.stringify(enrollment),
+  });
+}
+
+export function updateEnrollment(id, enrollment, token) {
+  return apiRequest(
+    `/api/enrollments/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      token,
+      body: JSON.stringify(enrollment),
+    }
+  );
+}
+
+export function deleteEnrollment(id, token) {
+  return apiRequest(
+    `/api/enrollments/${encodeURIComponent(id)}`,
+    {
+      method: 'DELETE',
+      token,
+    }
+  );
+}

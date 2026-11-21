@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Docentes from './Docentes.jsx';
 import Cursos from './Cursos.jsx';
+import Matriculas from './Matriculas.jsx';
 import './PanelReal.css';
 import {
   getResources,
@@ -162,6 +163,13 @@ async function handleDelete(student) {
 >
   📚 Cursos
 </button>
+<button
+  type="button"
+  className={page === 'enrollments' ? 'active' : ''}
+  onClick={() => setPage('enrollments')}
+>
+  📋 Matrículas
+</button>
 
     </nav>
 
@@ -169,6 +177,9 @@ async function handleDelete(student) {
 
   {/* CONTENIDO PRINCIPAL */}
   <main className="real-panel real-content">
+    {page === 'enrollments' && (
+  <Matriculas token={auth.token} />
+)}
     {page === 'courses' && (
   <Cursos token={auth.token} />
 )}
