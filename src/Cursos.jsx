@@ -61,26 +61,23 @@ export default function Cursos({ token }) {
     setMessage('');
 
     const course = {
-      ...form,
-      name: form.name.trim(),
-      code: form.code.trim(),
-      teacher: form.teacher.trim(),
-      grade: form.grade.trim(),
-      capacity: Number(form.capacity),
-      students: Number(form.students),
-    };
+  name: form.name.trim(),
+  code: form.code.trim(),
+  teacher: form.teacher.trim(),
+  grade: form.grade.trim(),
+  capacity: Number(form.capacity),
+  status: form.status,
+};
 
     if (
-      !Number.isInteger(course.capacity) ||
-      course.capacity <= 0 ||
-      !Number.isInteger(course.students) ||
-      course.students < 0 ||
-      course.students > course.capacity
-    ) {
-      setError('La capacidad y los inscritos deben ser válidos.');
-      return;
-    }
-
+  !Number.isInteger(course.capacity) ||
+  course.capacity <= 0 ||
+  (editingId !== null &&
+    course.capacity < Number(form.students))
+) {
+  setError('La capacidad no puede ser menor que los inscritos.');
+  return;
+}
     setSaving(true);
 
     try {
@@ -239,21 +236,19 @@ export default function Cursos({ token }) {
             <label htmlFor="course-students">
               Estudiantes inscritos
             </label>
-            <input
-              id="course-students"
-              type="number"
-              min="0"
-              max={form.capacity}
-              step="1"
-              required
-              value={form.students}
-              onChange={e =>
-                setForm({
-                  ...form,
-                  students: e.target.value,
-                })
-              }
-            />
+           <input
+  id="course-students"
+  type="number"
+  min="0"
+  value={editingId !== null ? form.students : 0}
+  readOnly
+  aria-describedby="students-help"
+/>
+
+<small id="students-help">
+  Los inscritos se actualizan automáticamente
+  cuando se confirman o cancelan matrículas.
+</small>
           </div>
 
           <div>
