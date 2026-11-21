@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Docentes from './Docentes.jsx';
 import './PanelReal.css';
 import {
   getResources,
@@ -9,6 +10,10 @@ import {
 
 export default function PanelReal({ auth, onLogout }) {
   const [students, setStudents] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [enrollments, setEnrollments] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -142,12 +147,23 @@ async function handleDelete(student) {
         🎓 Estudiantes
       </button>
 
+      <button
+  type="button"
+  className={page === 'teachers' ? 'active' : ''}
+  onClick={() => setPage('teachers')}
+>
+  👩‍🏫 Docentes
+</button>
+
     </nav>
 
   </aside>
 
   {/* CONTENIDO PRINCIPAL */}
   <main className="real-panel real-content">
+    {page === 'teachers' && (
+  <Docentes token={auth.token} />
+)}
     {/* PANEL PRINCIPAL */}
 {page === 'dashboard' && (
   <section>

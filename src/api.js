@@ -82,3 +82,33 @@ export function deleteStudent(id, token) {
     token,
   });
 }
+// Consultar docentes
+export function getTeachers(token) {
+  return getResources('teachers', token);
+}
+
+// Registrar docente
+export function createTeacher(teacher, token) {
+  return apiRequest('/api/teachers', {
+    method: 'POST',
+    token,
+    body: JSON.stringify(teacher),
+  });
+}
+
+// Actualizar docente
+export function updateTeacher(id, teacher, token) {
+  return apiRequest(`/api/teachers/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    token,
+    body: JSON.stringify(teacher),
+  });
+}
+
+// Eliminar docente
+export function deleteTeacher(id, token) {
+  return apiRequest(`/api/teachers/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    token,
+  });
+}
