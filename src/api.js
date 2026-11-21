@@ -112,3 +112,30 @@ export function deleteTeacher(id, token) {
     token,
   });
 }
+
+export function getCourses(token) {
+  return getResources('courses', token);
+}
+
+export function createCourse(course, token) {
+  return apiRequest('/api/courses', {
+    method: 'POST',
+    token,
+    body: JSON.stringify(course),
+  });
+}
+
+export function updateCourse(id, course, token) {
+  return apiRequest(`/api/courses/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    token,
+    body: JSON.stringify(course),
+  });
+}
+
+export function deleteCourse(id, token) {
+  return apiRequest(`/api/courses/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    token,
+  });
+}
