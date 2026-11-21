@@ -65,3 +65,20 @@ export function createStudent(student, token) {
     body: JSON.stringify(student),
   });
 }
+
+// Actualizar estudiante
+export function updateStudent(id, student, token) {
+  return apiRequest(`/api/students/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    token,
+    body: JSON.stringify(student),
+  });
+}
+
+// Eliminar estudiante
+export function deleteStudent(id, token) {
+  return apiRequest(`/api/students/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    token,
+  });
+}

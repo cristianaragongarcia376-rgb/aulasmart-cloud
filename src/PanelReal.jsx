@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { getResources, createStudent  } from './api.js';
+import {
+  getResources,
+  createStudent,
+  updateStudent,
+  deleteStudent,
+} from './api.js';
 
 export default function PanelReal({ auth, onLogout }) {
   const [students, setStudents] = useState([]);
@@ -14,7 +19,7 @@ export default function PanelReal({ auth, onLogout }) {
 });
 
 const [saving, setSaving] = useState(false);
-
+const [editingId, setEditingId] = useState(null);
   useEffect(() => {
     let active = true;
 
@@ -38,32 +43,74 @@ const [saving, setSaving] = useState(false);
 
     // Registrar un estudiante en PostgreSQL
   async function handleCreateStudent(e) {
-    e.preventDefault();
-    setSaving(true);
-    setError('');
+  e.preventDefault();
+  setSaving(true);
+  setError('');
 
-    try {
+  try {
+    if (editingId !== null) {
+      await updateStudent(editingId, form, auth.token);
+    } else {
       await createStudent(form, auth.token);
-
-      const updatedStudents = await getResources(
-        'students',
-        auth.token
-      );
-
-      setStudents(updatedStudents);
-
-      setForm({
-        name: '',
-        email: '',
-        grade: '',
-        status: 'Activo',
-      });
-    } catch (err) {
-      setError(err.message || 'No se pudo registrar el estudiante');
-    } finally {
-      setSaving(false);
     }
+
+    const updatedStudents = await getResources(
+      'students',
+      auth.token
+    );
+
+    setStudents(updatedStudents);
+
+    setForm({
+      name: '',
+      email: '',
+      grade: '',
+      status: 'Activo',
+    });
+
+    setEditingId(null);
+  } catch (err) {
+    setError(err.message || 'No se pudo guardar el estudiante');
+  } finally {
+    setSaving(false);
   }
+}
+
+function handleEdit(student) {
+  setEditingId(student.id);
+
+  setForm({
+    name: student.name,
+    email: student.email,
+    grade: student.grade,
+    status: student.status,
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function handleDelete(student) {
+  const confirmed = window.confirm(
+    `¿Eliminar a ${student.name}? Esta acción no se puede deshacer.`
+  );
+
+  if (!confirmed) return;
+
+  setError('');
+
+  try {
+    await deleteStudent(student.id, auth.token);
+
+    const updatedStudents = await getResources(
+      'students',
+      auth.token
+    );
+
+    setStudents(updatedStudents);
+  } catch (err) {
+    setError(err.message || 'No se pudo eliminar el estudiante');
+  }
+}
   
   return (
     <main style={{ padding: 32 }}>
@@ -129,9 +176,30 @@ const [saving, setSaving] = useState(false);
       </select>
     </div>
 
-    <button type="submit" disabled={saving}>
-      {saving ? 'Guardando...' : 'Registrar estudiante'}
-    </button>
+   <button type="submit" disabled={saving}>
+  {saving
+    ? 'Guardando...'
+    : editingId !== null
+      ? 'Actualizar estudiante'
+      : 'Registrar estudiante'}
+</button>
+
+{editingId !== null && (
+  <button
+    type="button"
+    onClick={() => {
+      setEditingId(null);
+      setForm({
+        name: '',
+        email: '',
+        grade: '',
+        status: 'Activo',
+      });
+    }}
+  >
+    Cancelar edición
+  </button>
+)}
   </form>
 </section>
 
@@ -146,10 +214,29 @@ const [saving, setSaving] = useState(false);
           : (
             <ul>
               {students.map(student => (
-                <li key={student.id}>
-                  {student.name} — {student.email}
-                </li>
-              ))}
+  <li key={student.id} style={{ marginBottom: 12 }}>
+    <strong>{student.name}</strong> — {student.email}
+    {' '} | {student.grade} | {student.status}
+
+    <div style={{ marginTop: 6 }}>
+      <button
+        type="button"
+        onClick={() => handleEdit(student)}
+      >
+        Editar
+      </button>
+
+      {' '}
+
+      <button
+        type="button"
+        onClick={() => handleDelete(student)}
+      >
+        Eliminar
+      </button>
+    </div>
+  </li>
+))}
             </ul>
           )
       )}
