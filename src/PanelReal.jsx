@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import './PanelReal.css';
 import {
   getResources,
   createStudent,
@@ -20,6 +21,7 @@ export default function PanelReal({ auth, onLogout }) {
 
 const [saving, setSaving] = useState(false);
 const [editingId, setEditingId] = useState(null);
+const [page, setPage] = useState('students');
   useEffect(() => {
     let active = true;
 
@@ -113,7 +115,63 @@ async function handleDelete(student) {
 }
   
   return (
-    <main style={{ padding: 32 }}>
+ <div className="real-layout">
+
+  {/* MENÚ LATERAL */}
+  <aside className="real-sidebar">
+
+    <div className="real-logo">
+      🎓 AulaSmart<span>Cloud</span>
+    </div>
+
+    <nav className="real-nav">
+
+      <button
+        type="button"
+        className={page === 'dashboard' ? 'active' : ''}
+        onClick={() => setPage('dashboard')}
+      >
+        📊 Panel principal
+      </button>
+
+      <button
+        type="button"
+        className={page === 'students' ? 'active' : ''}
+        onClick={() => setPage('students')}
+      >
+        🎓 Estudiantes
+      </button>
+
+    </nav>
+
+  </aside>
+
+  {/* CONTENIDO PRINCIPAL */}
+  <main className="real-panel real-content">
+    {/* PANEL PRINCIPAL */}
+{page === 'dashboard' && (
+  <section>
+    <h1>Panel principal</h1>
+    <p>Resumen académico de tu institución.</p>
+
+    <div className="real-stats">
+      <div className="real-stat-card">
+        <h3>🎓 Estudiantes registrados</h3>
+        <strong>{loading ? '...' : students.length}</strong>
+        <p>Datos reales de PostgreSQL</p>
+      </div>
+
+      <div className="real-stat-card">
+        <h3>☁️ Estado del sistema</h3>
+        <strong style={{ fontSize: 24 }}>
+          {error ? 'Error de consulta' : loading ? 'Cargando...' : 'Consulta completada'}
+        </strong>
+        <p>API HTTPS de AulaSmart Cloud</p>
+      </div>
+    </div>
+  </section>
+)}
+
       <h1>Panel académico — AulaSmart Cloud</h1>
       <p>
   Administrador: {auth.user?.name || auth.user?.email || 'Usuario autenticado'}
@@ -122,7 +180,9 @@ async function handleDelete(student) {
       <button type="button" onClick={onLogout}>
         Cerrar sesión
       </button>
-<section style={{ marginTop: 30, marginBottom: 30 }}>
+      {page === 'students' && (
+  <>
+    <section style={{ marginTop: 30, marginBottom: 30 }}>
   <h2>Registrar nuevo estudiante</h2>
 
   <form onSubmit={handleCreateStudent}>
@@ -203,6 +263,7 @@ async function handleDelete(student) {
   </form>
 </section>
 
+
       <h2>Estudiantes registrados en PostgreSQL</h2>
 
       {loading && <p>Cargando estudiantes...</p>}
@@ -240,6 +301,11 @@ async function handleDelete(student) {
             </ul>
           )
       )}
+
+      </>
+    )}
+
     </main>
-  );
+  </div>
+ );
 }
