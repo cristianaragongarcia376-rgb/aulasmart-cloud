@@ -1,0 +1,200 @@
+
+/* AulaSmart Cloud - Inicio de sesión */
+
+* {
+  box-sizing: border-box;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at 15% 15%, #ddd6fe 0%, transparent 32%),
+    radial-gradient(circle at 85% 85%, #dbeafe 0%, transparent 35%),
+    #f3f5ff;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 460px;
+  padding: 42px;
+  background: #ffffff;
+  border: 1px solid #edf0fa;
+  border-radius: 24px;
+  box-shadow: 0 24px 70px rgba(30, 41, 89, 0.10);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.login-logo {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  background: #7250f4;
+  color: white;
+  border-radius: 16px;
+  font-size: 30px;
+}
+
+.login-brand h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #152653;
+  margin: 0;
+}
+
+.login-brand h2 span {
+  color: #7250f4;
+}
+
+.login-brand p {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #94a0b8;
+  margin: 5px 0 0;
+  font-weight: 700;
+}
+
+.login-title {
+  font-size: 29px;
+  font-weight: 800;
+  color: #152653;
+  margin: 0 0 10px;
+}
+
+.login-subtitle {
+  color: #73809a;
+  line-height: 1.6;
+  font-size: 15px;
+  margin-bottom: 28px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.login-field label {
+  color: #25365e;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.login-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #dce2f0;
+  border-radius: 12px;
+  background: white;
+  transition: 0.2s;
+}
+
+.login-input-wrap:focus-within {
+  border-color: #7250f4;
+  box-shadow: 0 0 0 4px rgba(114, 80, 244, 0.10);
+}
+
+.login-input-wrap > span {
+  padding-left: 15px;
+  color: #929db3;
+}
+
+.login-input-wrap input {
+  width: 100%;
+  min-width: 0;
+  padding: 15px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  color: #172b55;
+}
+
+.login-input-wrap input::placeholder {
+  color: #a2abc0;
+}
+
+.login-toggle {
+  background: none;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  color: #78859e;
+  font-size: 13px;
+}
+
+.login-button {
+  width: 100%;
+  padding: 16px;
+  background: #7250f4;
+  color: white;
+  border: 0;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.login-button:hover:not(:disabled) {
+  background: #5c3ce0;
+  transform: translateY(-1px);
+}
+
+.login-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.login-back {
+  width: 100%;
+  padding: 11px;
+  border: 0;
+  background: transparent;
+  color: #7250f4;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.login-error {
+  padding: 12px 14px;
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.login-footer {
+  margin-top: 25px;
+  text-align: center;
+  color: #93a0b5;
+  font-size: 12px;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 28px 22px;
+  }
+
+  .login-title {
+    font-size: 25px;
+  }
+}
