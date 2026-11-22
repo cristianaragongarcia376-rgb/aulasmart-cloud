@@ -1,0 +1,304 @@
+
+/* PANEL ADMINISTRATIVO AULASMART CLOUD */
+
+.real-panel {
+  min-height: 100vh;
+  background: #f5f6fc;
+  padding: 32px;
+  color: #182958;
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+.real-panel h1 {
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.real-panel h2 {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+.real-panel p {
+  color: #64748b;
+}
+
+.real-panel section {
+  background: white;
+  padding: 28px;
+  border-radius: 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 5px 25px rgba(30, 41, 89, 0.05);
+}
+
+.real-panel form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.real-panel form > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.real-panel label {
+  font-weight: 600;
+  color: #334155;
+}
+
+.real-panel input,
+.real-panel select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dbe1ee;
+  border-radius: 10px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.real-panel input:focus,
+.real-panel select:focus {
+  outline: 2px solid #7659ee;
+  outline-offset: 1px;
+}
+
+.real-panel button {
+  background: #7353ea;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.real-panel button:hover {
+  background: #5c3ccf;
+}
+
+.real-panel button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.real-panel li {
+  background: white;
+  border: 1px solid #e5e9f3;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 12px;
+}
+
+.real-panel ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+@media (max-width: 768px) {
+  .real-panel {
+    padding: 16px;
+  }
+
+  .real-panel form {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ESTRUCTURA DEL DASHBOARD */
+
+.real-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.real-sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e8eaf4;
+  padding: 28px 18px;
+}
+
+.real-logo {
+  font-size: 22px;
+  font-weight: 800;
+  color: #172554;
+  margin-bottom: 40px;
+}
+
+.real-logo span {
+  color: #7353ea;
+}
+
+.real-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.real-nav button {
+  text-align: left;
+  background: transparent;
+  color: #64748b;
+  padding: 14px 16px;
+  border-radius: 12px;
+}
+
+.real-nav button:hover,
+.real-nav button.active {
+  background: #eeeaff;
+  color: #7353ea;
+}
+
+.real-content {
+  min-width: 0;
+  padding: 32px;
+  background: #f5f6fc;
+}
+
+@media (max-width: 768px) {
+  .real-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .real-sidebar {
+    border-right: none;
+    border-bottom: 1px solid #e8eaf4;
+  }
+
+  .real-nav {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+}
+/* Ajustes de distribución del dashboard */
+
+.real-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  align-items: stretch;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.real-sidebar {
+  min-width: 0;
+  background: #ffffff;
+  border-right: 1px solid #e8eaf4;
+  padding: 28px 18px;
+}
+
+.real-content {
+  min-width: 0;
+  width: 100%;
+  padding: 32px;
+  box-sizing: border-box;
+}
+
+.real-panel.real-content {
+  max-width: none;
+  margin: 0;
+}
+
+.real-panel h1 {
+  font-size: clamp(24px, 2.5vw, 32px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  .real-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .real-sidebar {
+    border-right: none;
+    border-bottom: 1px solid #e8eaf4;
+  }
+
+  .real-content {
+    padding: 20px;
+  }
+
+  .real-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+@media (min-width: 769px) {
+  .real-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .real-nav button {
+    width: 100%;
+    text-align: left;
+  }
+}
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.report-actions button {
+  width: auto;
+}
+
+@media (max-width: 600px) {
+  .report-actions {
+    flex-direction: column;
+  }
+
+  .report-actions button {
+    width: 100%;
+  }
+}
+/* Estadísticas del dashboard y reportes */
+
+.real-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.real-stat-card {
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e8eaf4;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 4px 18px rgba(30, 41, 89, 0.04);
+}
+
+.real-stat-card h3 {
+  font-size: 15px;
+  color: #64748b;
+  margin-bottom: 14px;
+}
+
+.real-stat-card strong {
+  display: block;
+  color: #7353ea;
+  font-size: 30px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+  .real-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 650px) {
+  .real-stats {
+    grid-template-columns: 1fr;
+  }
+}

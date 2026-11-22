@@ -4,3 +4,5 @@ dist/
 server/.env
 .DS_Store
 *.log
+# Copias de seguridad locales
+src/*.backup

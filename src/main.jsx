@@ -1,4 +1,6 @@
-import React,{useEffect,useMemo,useState} from 'react';
+import PanelReal from './PanelReal.jsx';
+import Login from './Login.jsx';
+import React,{useEffect,useMemo,useState} from 'react';import { login, getCurrentUser } from './api.js';
 import{createRoot}from'react-dom/client';
 import{LayoutDashboard,GraduationCap,Users,BookOpen,ClipboardList,Wallet,BarChart3,Settings,Search,Bell,ChevronDown,Plus,ArrowUpRight,ArrowDownRight,CalendarDays,Menu,X,Download,Trash2,Pencil,Check,School,LogOut,Filter,MoreHorizontal,ShieldCheck,Cloud,UserRound,Clock,CheckCircle2,AlertCircle,ChevronRight,Sun,Moon}from'lucide-react';
 import{AreaChart,Area,ResponsiveContainer,XAxis,YAxis,CartesianGrid,Tooltip,PieChart,Pie,Cell,BarChart,Bar}from'recharts';
@@ -21,8 +23,50 @@ const fields={students:[['name','Nombre completo','text'],['email','Correo elect
 function FormModal(){const type=modal;const config=fields[type];const[form,setForm]=useState(()=>Object.fromEntries(config.map(([k,,kind,opts])=>[k,edit?.[k]??(kind==='select'?opts?.[0]||'':kind==='date'?new Date().toISOString().slice(0,10):'')])));return <div className="overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setModal(null)}}><div className="dialog" role="dialog" aria-modal="true" aria-label="Formulario"><div className="dialog-top"><div><h2>{edit?'Editar':'Nuevo registro ·'} {titles[type][0].toLowerCase()}</h2><p>Completa los campos para {edit?'actualizar':'guardar'} el registro.</p></div><button onClick={()=>setModal(null)} aria-label="Cerrar"><X size={21}/></button></div><form onSubmit={e=>{e.preventDefault();if(type==='courses'&&Number(form.students)>Number(form.capacity)){setToast('Los inscritos no pueden superar los cupos');return}save(type,{...form,...(type==='students'?{initials:initial(form.name),color:edit?.color||'#e6e7ff'}:{}),...(type==='courses'?{capacity:Number(form.capacity),students:Number(form.students),color:edit?.color||'#7357e8'}:{}),...(type==='payments'?{amount:Number(form.amount)}:{})})}}><div className="form-grid">{config.map(([key,label,kind,options])=><label key={key}>{label}{kind==='select'?<select required value={form[key]} onChange={e=>setForm({...form,[key]:e.target.value})}><option value="" disabled>Seleccionar...</option>{options.map(o=><option key={o} value={o}>{o}</option>)}</select>:<input required min={kind==='number'?0:undefined} type={kind} value={form[key]} onChange={e=>setForm({...form,[key]:e.target.value})} placeholder={label}/>}</label>)}</div><div className="dialog-footer"><button type="button" className="btn secondary" onClick={()=>setModal(null)}>Cancelar</button><button type="submit" className="btn primary"><Check size={16}/> {edit?'Guardar cambios':'Crear registro'}</button></div></form></div></div>}
 return <div className="app"><aside className={'sidebar '+(mobile?'open':'')}><div className="brand"><span className="brand-icon"><GraduationCap size={27}/></span><span><strong>AulaSmart<span>Cloud</span></strong><small>EDUCATION PLATFORM</small></span><button className="mobile-close" onClick={()=>setMobile(false)}><X size={20}/></button></div><div className="institution"><div className="institution-icon"><School size={21}/></div><div><strong>{school||'Mi institución'}</strong><small>Plan demostración</small></div><ChevronDown size={16}/></div><nav>{NAV.map(g=><div className="nav-group" key={g.group}><span className="nav-heading">{g.group}</span>{g.items.map(([key,name,Icon])=><button key={key} className={'nav-item '+(page===key?'active':'')} onClick={()=>go(key)}><Icon size={19}/><span>{name}</span>{page===key&&<span className="active-indicator"/>}</button>)}</div>)}</nav><div className="sidebar-bottom"><div className="help-card"><div className="help-symbol"><Cloud size={23}/></div><strong>Tu gestión, más simple</strong><p>Organiza toda tu institución desde un solo lugar.</p><button onClick={()=>go('reports')}>Ver reportes <ArrowUpRight size={15}/></button></div><div className="sidebar-profile"><span className="profile-avatar">AD</span><div><strong>Administrador</strong><small>Modo demostración</small></div><ShieldCheck size={17}/></div></div></aside>{mobile&&<div className="mobile-shade" onClick={()=>setMobile(false)}/>}<main className="main"><header className="topbar"><div className="topbar-left"><button className="menu-button" onClick={()=>setMobile(true)} aria-label="Abrir menú"><Menu size={23}/></button><div className="breadcrumbs">AulaSmart <ChevronRight size={14}/> <strong>{titles[page][0]}</strong></div></div><div className="topbar-right"><span className="demo-pill"><span className="live-dot"/> Modo demo</span><button className="header-icon" title="Cambiar tema" onClick={()=>setDark(!dark)}>{dark?<Sun size={19}/>:<Moon size={19}/>}</button><button className="header-icon" title="Notificaciones de ejemplo" onClick={()=>setToast('No tienes notificaciones nuevas')}><Bell size={19}/><i/></button><span className="topbar-divider"/><span className="profile-avatar">AD</span><div className="topbar-user"><strong>Administrador</strong><small>Institución demo</small></div><ChevronDown size={15} className="muted"/></div></header><div className="content"><div className="page-heading"><div><div className="eyebrow"><CalendarDays size={14}/> Año académico 2026 <span>·</span> Vista administrativa</div><h1>{titles[page][0]}</h1><p>{titles[page][1]}</p></div>{['students','teachers','courses','enrollments','payments'].includes(page)&&<button className="btn primary add-button" onClick={()=>show(page)}><Plus size={18}/> {({students:'Nuevo estudiante',teachers:'Nuevo docente',courses:'Nuevo curso',enrollments:'Nueva matrícula',payments:'Registrar pago'})[page]}</button>}</div>{['students','teachers','courses','enrollments','payments'].includes(page)&&<div className="toolbar"><div className="search"><Search size={18}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por nombre, curso, estado..." aria-label="Buscar registros"/></div><div className="toolbar-meta"><Filter size={16}/> {db[page].length} registros en total</div></div>}{page==='dashboard'?dashboard():page==='courses'?courseCards():columns[page]?table(page):page==='reports'?reports():settings()}<footer>© 2026 AulaSmart Cloud <span>·</span> Proyecto académico · Universidad de la Costa <span>·</span> Datos de demostración</footer></div></main>{modal&&<FormModal key={modal+'-'+(edit?.id||'new')}/>} {toast&&<div className="toast"><CheckCircle2 size={18}/>{toast}<button onClick={()=>setToast('')}><X size={15}/></button></div>}</div>}
 function PublicLanding(){
+    const [showLogin, setShowLogin] = useState(false);
+const [auth, setAuth] = useState(null);
+
+const handleLoginSuccess = async (result) => {
+  try {
+    const currentUser = await getCurrentUser(result.token);
+
+    setAuth({
+      token: result.token,
+      user: currentUser.user,
+    });
+
+    setShowLogin(false);
+  } catch (error) {
+    console.error('Error al verificar la sesión:', error);
+    alert('No se pudo verificar la sesión con AWS.');
+  }
+};
  const [entered,setEntered]=useState(false);
- if(entered)return <App/>;
- return <main className="landing"><div className="landing-shell"><div className="landing-nav"><span>🎓 AulaSmart Cloud</span><span>Proyecto académico · 2026</span></div><div className="landing-hero"><span className="landing-kicker">GESTIÓN ACADÉMICA INTELIGENTE</span><h1>Tu institución, organizada en un solo lugar.</h1><p>Explora una demostración de gestión de estudiantes, docentes, cursos, matrículas y reportes con una interfaz intuitiva.</p><button className="landing-cta" onClick={()=>setEntered(true)}>Explorar demostración <ArrowUpRight size={19}/></button><p className="landing-disclaimer">Esta versión utiliza datos ficticios guardados en el navegador. No introduzcas información personal real. El acceso a la demostración no constituye autenticación.</p></div><div className="landing-features"><div>📚 Gestión de cursos</div><div>👩‍🎓 Estudiantes y docentes</div><div>📊 Reportes y estadísticas</div></div></div></main>
+if (auth) {
+  return (
+    <PanelReal
+      auth={auth}
+      onLogout={() => setAuth(null)}
+    />
+  );
+}
+
+if (entered) return <App />;
+
+if (showLogin) {
+  return (
+    <Login
+      onSuccess={handleLoginSuccess}
+      onBack={() => setShowLogin(false)}
+    />
+  );
+}
+ return <main className="landing"><div className="landing-shell"><div className="landing-nav"><span>🎓 AulaSmart Cloud</span><span>Proyecto académico · 2026</span></div><div className="landing-hero"><span className="landing-kicker">GESTIÓN ACADÉMICA INTELIGENTE</span><h1>Tu institución, organizada en un solo lugar.</h1><p>Explora una demostración de gestión de estudiantes, docentes, cursos, matrículas y reportes con una interfaz intuitiva.</p><button className="landing-cta" onClick={()=>setEntered(true)}>Explorar demostración <ArrowUpRight size={19}/></button><button
+  type="button"
+  className="landing-cta"
+  onClick={() => setShowLogin(true)}
+>
+  Iniciar sesión
+</button><p className="landing-disclaimer">Esta versión utiliza datos ficticios guardados en el navegador. No introduzcas información personal real. El acceso a la demostración no constituye autenticación.</p></div><div className="landing-features"><div>📚 Gestión de cursos</div><div>👩‍🎓 Estudiantes y docentes</div><div>📊 Reportes y estadísticas</div></div></div></main>
 }
 createRoot(document.getElementById('root')).render(<PublicLanding/>);
